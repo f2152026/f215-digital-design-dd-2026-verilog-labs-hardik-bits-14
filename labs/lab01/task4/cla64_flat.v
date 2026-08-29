@@ -60,6 +60,37 @@ module cla64_flat(
   // both checks.
   //
   // TODO: paste your verified assign statements for c[1] through c[64] here.
+    // ---------------------------------------------------------------
+  // Step 2: the 64 direct carry equations
+  // ---------------------------------------------------------------
+  function carry_k;
+    input integer k;      // 1..64
+    input [63:0] pf, gf;
+    input cinf;
+    integer j, m;
+    reg term;
+    begin
+      carry_k = gf[k-1];
+      for (j = 0; j <= k-2; j = j + 1) begin
+        term = gf[j];
+        for (m = j+1; m <= k-1; m = m + 1)
+          term = term & pf[m];
+        carry_k = carry_k | term;
+      end
+      term = cinf;
+      for (m = 0; m <= k-1; m = m + 1)
+        term = term & pf[m];
+      carry_k = carry_k | term;
+    end
+  endfunction
+
+  genvar k;
+  generate
+    for (k = 1; k <= 64; k = k + 1) begin : gen_carry
+      assign #(2) c[k] = carry_k(k, p, g, cin);
+    end
+  endgenerate
+
 
   assign cout = c[64];
 
